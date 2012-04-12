@@ -421,12 +421,19 @@ int Volume::mountVol() {
             // For secondary external storage we keep things locked up.
             gid = AID_MEDIA_RW;
         }
-        if (Fat::doMount(devicePath, "/mnt/secure/staging", false, false, false,
-                AID_SYSTEM, gid, 0702, true)) {
-            SLOGE("%s failed to mount via VFAT (%s)\n", devicePath, strerror(errno));
-            continue;
-        }
-
+		if((flags & VOL_RDONLY) == (VOL_RDONLY)) {
+			if (Fat::doMount(devicePath, "/mnt/secure/staging", true, false, false,
+						AID_SYSTEM, gid, 0702, true)) {
+				SLOGE("%s failed to mount via VFAT (%s)\n", devicePath, strerror(errno));
+				continue;
+			}
+		} else {
+			if (Fat::doMount(devicePath, "/mnt/secure/staging", false, false, false,
+						AID_SYSTEM, gid, 0702, true)) {
+				SLOGE("%s failed to mount via VFAT (%s)\n", devicePath, strerror(errno));
+				continue;
+			}
+		}
         SLOGI("Device %s, target %s mounted @ /mnt/secure/staging", devicePath, getMountpoint());
 
         protectFromAutorunStupidity();
