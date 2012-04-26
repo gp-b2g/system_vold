@@ -123,6 +123,7 @@ private:
     VolumeManager();
     void readInitialState();
     bool isMountpointMounted(const char *mp);
+    int openLun(int number);
 };
 
 extern "C" {
