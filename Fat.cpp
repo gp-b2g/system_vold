@@ -179,10 +179,33 @@ int Fat::format(const char *fsPath, unsigned int numSectors) {
         close(fd);
 
     }
-    if ((nr_sec/2) <= ((unsigned int) (1024*1024) * 2)) {    /* 2GB  */
+
+    /*
+     * < 8GB		->	cluster size = 4KB
+     * 8GB ~ 16GB	->	cluster size = 8KB
+     * 16GB ~ 32GB	->	cluster size = 16KB
+     * 32GB ~ 2TB	->	cluster size = 32KB
+     * > 2TB		->	Not supported
+     */
+    if ((nr_sec/2) < ((unsigned int) (1024*1024) * 8)) {		/* < 8GB  */
             args[Indx++] = "-c";
             args[Indx++] = "8";
-
+	    SLOGI("Format the disk with cluster size: 4KB\n");
+    } else if ((nr_sec/2) < ((unsigned int) (1024*1024) * 16)) {	/* 8GB ~ 16GB */
+            args[Indx++] = "-c";
+            args[Indx++] = "16";
+	    SLOGI("Format the disk with cluster size: 8KB\n");
+    } else if ((nr_sec/2) < ((unsigned int) (1024*1024) * 32)) {	/* 16GB ~ 32GB */
+	    args[Indx++] = "-c";
+	    args[Indx++] = "32";
+	    SLOGI("Format the disk with cluster size: 16KB\n");
+    } else if ((nr_sec/2) < ((unsigned int) (1024*1024*1024) * 2)) {	/* 32GB ~ 2TB */
+	    args[Indx++] = "-c";
+	    args[Indx++] = "64";
+	    SLOGI("Format the disk with cluster size: 32KB\n");
+    } else {								/* > 2TB */
+	    SLOGE("Unsupported disk\n");
+	    return -1;
     }
 
     if (numSectors) {
