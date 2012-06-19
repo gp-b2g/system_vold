@@ -84,6 +84,10 @@ int Fat::check(const char *fsPath) {
             errno = EIO;
             return -1;
 
+	case 16:
+	    SLOGE("Too large SD card with too small cluster size");
+	    errno = ENOMEM;
+	    return -1;
         default:
             SLOGE("Filesystem check failed (unknown exit code %d)", rc);
             errno = EIO;

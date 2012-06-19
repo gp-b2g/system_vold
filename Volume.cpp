@@ -104,6 +104,8 @@ static const char *stateToStr(int state) {
         return "Shared-Unmounted";
     else if (state == Volume::State_SharedMnt)
         return "Shared-Mounted";
+    else if (state == Volume::State_Nomem)
+	return "No-Enough-Memory";
     else
         return "Unknown-Error";
 }
@@ -406,6 +408,13 @@ int Volume::mountVol() {
                 SLOGW("%s does not contain a FAT filesystem\n", devicePath);
                 continue;
             }
+
+	    if (errno == ENOMEM) {
+		SLOGE("%s failed FS checks (%s)", devicePath, strerror(errno));
+		setState(Volume::State_Nomem);
+		return -1;
+	    }
+
             errno = EIO;
             /* Badness - abort the mount */
             SLOGE("%s failed FS checks (%s)", devicePath, strerror(errno));

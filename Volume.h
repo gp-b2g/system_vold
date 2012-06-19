@@ -37,6 +37,7 @@ public:
     static const int State_Formatting = 6;
     static const int State_Shared     = 7;
     static const int State_SharedMnt  = 8;
+    static const int State_Nomem   = 9;
 
     static const char *SECDIR;
     static const char *SEC_STGDIR;
