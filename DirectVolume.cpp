@@ -139,15 +139,13 @@ int DirectVolume::handleBlockEvent(NetlinkEvent *evt) {
 void DirectVolume::handleDiskAdded(const char *devpath, NetlinkEvent *evt) {
     mDiskMajor = atoi(evt->findParam("MAJOR"));
     mDiskMinor = atoi(evt->findParam("MINOR"));
-
     const char *tmp = evt->findParam("NPARTS");
     if (tmp) {
         mDiskNumParts = atoi(tmp);
     } else {
         SLOGW("Kernel block uevent missing 'NPARTS'");
-        mDiskNumParts = 1;
+        mDiskNumParts = 0;
     }
-
     char msg[255];
 
     int partmask = 0;
@@ -183,7 +181,6 @@ void DirectVolume::handlePartitionAdded(const char *devpath, NetlinkEvent *evt) 
     int part_num;
 
     const char *tmp = evt->findParam("PARTN");
-
     if (tmp) {
         part_num = atoi(tmp);
     } else {
@@ -204,6 +201,7 @@ void DirectVolume::handlePartitionAdded(const char *devpath, NetlinkEvent *evt) 
         SLOGE("Partition '%s' has a different major than its disk!", devpath);
         return;
     }
+
 #ifdef PARTITION_DEBUG
     SLOGD("Dv:partAdd: part_num = %d, minor = %d\n", part_num, minor);
 #endif
@@ -359,6 +357,11 @@ int DirectVolume::getDeviceNodes(dev_t *devs, int max) {
             devs[i] = MKDEV(mDiskMajor, mPartMinors[i]);
         }
         return mDiskNumParts;
+    }
+
+    if(mPartIdx == mDiskMinor){
+    devs[0] = MKDEV(mDiskMajor, mPartIdx);
+    return 1;
     }
     devs[0] = MKDEV(mDiskMajor, mPartMinors[mPartIdx -1]);
     return 1;
