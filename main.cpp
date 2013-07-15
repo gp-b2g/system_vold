@@ -165,47 +165,12 @@ static int parse_mount_flags(char *mount_flags)
 
 static int process_config(VolumeManager *vm) {
     FILE *fp;
-    FILE *fp2;
     int n = 0;
     char line[255];
-    char state[255];
-    int sdcard_partition_override = 0;
-    int emmc_partition_support = 0;
-    char value[PROPERTY_VALUE_MAX];
 
-	property_get("persist.sys.emmcsdcard.enabled", value, "");
-	sdcard_partition_override = atoi(value);
-
-	property_get("persist.sys.emmcpartition", value, "");
-	emmc_partition_support = atoi(value);
-
-	if(!emmc_partition_support){
-		if (!(fp = fopen("/etc/vold.origin.fstab", "r"))) {
-			return -1;
-		}
-		SLOGI("Load /etc/vold.origin.fstab. Do not use internal emmc partition.");
-	}
-	else{
-		if(sdcard_partition_override){
-			fp2 = fopen("/sys/devices/system/soc/soc0/hw_platform", "r");
-			if(!fp2)
-				return -1;
-			if (fgets(state, sizeof(state), fp2) && !strncmp(state, "msm7627a_sku7", 13)) {
-				if (!(fp = fopen("/etc/vold.fat.fstab", "r")))
-					return -1;
-				SLOGI("Load /etc/vold.fat.fstab, use internal fat.img as SDCARD!");
-			} else {
-				if (!(fp = fopen("/etc/vold.emmc.fstab", "r")))
-					return -1;
-				SLOGI("Load /etc/vold.emmc.fstab, use internal emmc as SDCARD!");
-			}
-			fclose(fp2);
-		}
-		else{
-			if (!(fp = fopen("/etc/vold.fstab", "r")))
-				return -1;
-		}
-	}
+    if (!(fp = fopen("/etc/vold.fstab", "r"))) {
+        return -1;
+    }
 
     while(fgets(line, sizeof(line), fp)) {
         const char *delim = " \t";
