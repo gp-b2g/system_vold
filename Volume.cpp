@@ -432,14 +432,10 @@ int Volume::mountVol() {
         errno = 0;
         int gid;
 
-        if (primaryStorage) {
-            // Special case the primary SD card.
-            // For this we grant write access to the SDCARD_RW group.
-            gid = AID_SDCARD_RW;
-        } else {
-            // For secondary external storage we keep things locked up.
-            gid = AID_MEDIA_RW;
-        }
+        // For this we grant write access to the SDCARD_RW group.
+		// FFOS need sdcard_rw group for all storages, this solves problems storing videos con camera app
+        gid = AID_SDCARD_RW;
+
 		if((flags & VOL_RDONLY) == (VOL_RDONLY)) {
 			if (Fat::doMount(devicePath, "/mnt/secure/staging", true, false, false,
 						AID_SYSTEM, gid, 0702, true)) {
